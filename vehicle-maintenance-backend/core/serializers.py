@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import User
+from .models import User, Vehicle, Service, ServiceRecord
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -94,3 +94,36 @@ class LoginSerializer(serializers.Serializer):
             )
         
         return data
+
+
+class VehicleSerializer(serializers.ModelSerializer):
+    """Serializer for Vehicle model"""
+    owner_name = serializers.ReadOnlyField(source='owner.name')
+    
+    class Meta:
+        model = Vehicle
+        fields = ['id', 'license_plate', 'brand', 'model', 'year', 'owner', 'owner_name', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+    """Serializer for Service (catalog) model"""
+    
+    class Meta:
+        model = Service
+        fields = ['id', 'name', 'description', 'base_cost']
+        read_only_fields = ['id']
+
+
+class ServiceRecordSerializer(serializers.ModelSerializer):
+    """Serializer for ServiceRecord model"""
+    vehicle_plate = serializers.ReadOnlyField(source='vehicle.license_plate')
+    service_name = serializers.ReadOnlyField(source='service.name')
+    
+    class Meta:
+        model = ServiceRecord
+        fields = [
+            'id', 'vehicle', 'vehicle_plate', 'service', 'service_name', 
+            'date', 'kilometers', 'cost', 'notes', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']

@@ -71,3 +71,50 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     def get_short_name(self):
         return self.name
+
+
+class Vehicle(models.Model):
+    """Model representing a vehicle owned by a user."""
+    license_plate = models.CharField(max_length=20, unique=True)
+    brand = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    year = models.IntegerField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vehicles')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'vehicles'
+
+    def __str__(self):
+        return f"{self.license_plate} ({self.brand} {self.model})"
+
+
+class Service(models.Model):
+    """Model representing a type of service (e.g., Oil Change, Brake Inspection)."""
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    base_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    class Meta:
+        db_table = 'services'
+
+    def __str__(self):
+        return self.name
+
+
+class ServiceRecord(models.Model):
+    """Model representing an actual service performed on a vehicle."""
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='service_records')
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, related_name='records')
+    date = models.DateField()
+    kilometers = models.IntegerField()
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'service_records'
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.vehicle.license_plate} - {self.service.name if self.service else 'General'} on {self.date}"

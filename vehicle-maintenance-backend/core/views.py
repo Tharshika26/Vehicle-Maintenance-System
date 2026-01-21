@@ -1,9 +1,12 @@
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .models import User
+from .serializers import (
+    RegisterSerializer, LoginSerializer, UserSerializer,
+    VehicleSerializer, ServiceSerializer, ServiceRecordSerializer
+)
+from .models import User, Vehicle, Service, ServiceRecord
 
 
 def get_tokens_for_user(user):
@@ -95,3 +98,56 @@ class UserDetailView(generics.RetrieveAPIView):
     
     def get_object(self):
         return self.request.user
+
+
+class VehicleViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for viewing and editing vehicle instances.
+    """
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter vehicles by owner if the user is not an admin."""
+        user = self.request.user
+        if user.role == 'admin':
+            return Vehicle.objects.all()
+        return Vehicle.objects.filter(owner=user)
+
+    def perform_create(self, serializer):
+        """Set the owner to the current user if not provided or if the user is not an admin."""
+        if self.request.user.role != 'admin' or 'owner' not in self.request.data:
+            serializer.save(owner=self.request.user)
+        else:
+            serializer.save()
+
+
+class ServiceViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for viewing and editing service instances.
+    """
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+    
+    def get_permissions(self):
+        """Allow read-only for owners, full CRUD for admins."""
+        if self.action in ['list', 'retrieve']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
+
+
+class ServiceRecordViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for viewing and editing service record instances.
+    """
+    queryset = ServiceRecord.objects.all()
+    serializer_class = ServiceRecordSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """Filter records by vehicle owner if the user is not an admin."""
+        user = self.request.user
+        if user.role == 'admin':
+            return ServiceRecord.objects.all()
+        return ServiceRecord.objects.filter(vehicle__owner=user)
