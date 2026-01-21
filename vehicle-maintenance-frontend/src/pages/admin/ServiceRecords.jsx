@@ -47,15 +47,17 @@ const ServiceRecords = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setNewRecord({ ...newRecord, [name]: value });
+        let updatedRecord = { ...newRecord, [name]: value };
 
-        // Auto-fill cost if service type changes and cost is empty
-        if (name === 'service' && value && !newRecord.cost) {
+        // Auto-fill cost if service type changes
+        if (name === 'service' && value) {
             const selectedService = services.find(s => s.id === parseInt(value));
             if (selectedService) {
-                setNewRecord(prev => ({ ...prev, service: value, cost: selectedService.base_cost }));
+                updatedRecord.cost = selectedService.base_cost;
             }
         }
+
+        setNewRecord(updatedRecord);
     };
 
     const handleSubmit = async (e) => {
