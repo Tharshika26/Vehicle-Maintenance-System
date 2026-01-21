@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import heroCar from '../../assets/hero-car.jpeg';
 
 const Register = () => {
@@ -14,19 +15,62 @@ const Register = () => {
         role: 'owner' // default role
     });
 
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
-        // Mock register logic
-        console.log('Registered with:', formData);
-        localStorage.setItem('userRole', formData.role);
-        if (formData.role === 'admin') {
-            navigate('/admin/dashboard');
-        } else {
+        setError('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const response = await axios.post('http://127.0.0.1:8000/api/auth/register/', {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                city: formData.city,
+                password: formData.password,
+                role: 'owner' // Force role to owner for public registration
+            }, {
+                headers: { "Content-Type": "application/json" }
+            });
+
+            // Assuming backend returns same structure as login: access, refresh, user
+            const { access, refresh, user } = response.data;
+
+            localStorage.setItem('accessToken', access);
+            localStorage.setItem('refreshToken', refresh);
+            localStorage.setItem('userRole', user.role);
+            localStorage.setItem('user', JSON.stringify(user));
+
             navigate('/owner/dashboard');
+
+        } catch (err) {
+            console.error('Registration error:', err);
+            if (err.response && err.response.data) {
+                // Handle different error objects
+                if (err.response.data.detail) {
+                    setError(err.response.data.detail);
+                } else {
+                    // Start extracting field errors
+                    const messages = Object.values(err.response.data).flat();
+                    setError(messages[0] || 'Registration failed.');
+                }
+            } else {
+                setError('Network error. Is the backend server running?');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -50,6 +94,13 @@ const Register = () => {
                     <p className="text-gray-500 mb-5 text-sm">
                         Join as a vehicle owner to track your full service history.
                     </p>
+
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
+                            <p className="font-bold">Error</p>
+                            <p>{error}</p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleRegister} className="space-y-3">
                         <div>
@@ -183,9 +234,10 @@ const Register = () => {
 
                         <button
                             type="submit"
-                            className="w-full bg-[#00C27B] text-white font-bold py-2.5 rounded-lg hover:bg-[#00a669] transition shadow-md shadow-green-500/20 mt-3 text-sm"
+                            disabled={isLoading}
+                            className={`w-full bg-[#00C27B] text-white font-bold py-2.5 rounded-lg hover:bg-[#00a669] transition shadow-md shadow-green-500/20 mt-3 text-sm ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            Create Account
+                            {isLoading ? 'Creating Account...' : 'Create Account'}
                         </button>
                     </form>
 
