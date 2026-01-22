@@ -67,3 +67,4 @@ reset_pass.py
 test_api.py
 temp/
 tmp/
+vehicle-maintenance-backend/.env
