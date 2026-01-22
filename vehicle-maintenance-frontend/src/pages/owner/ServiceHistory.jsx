@@ -15,7 +15,7 @@ const ServiceHistory = () => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Service History</h1>
                 <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg">
-                    <span className="font-semibold">Total Maintenance Cost:</span> ${totalCost}
+                    <span className="font-semibold">Total Maintenance Cost:</span> Rs.{totalCost}
                 </div>
             </div>
 
@@ -36,7 +36,7 @@ const ServiceHistory = () => {
                                 <td className="p-3 whitespace-nowrap">{record.date}</td>
                                 <td className="p-3">{record.vehicle}</td>
                                 <td className="p-3">{record.type}</td>
-                                <td className="p-3 font-medium text-green-600">${record.cost}</td>
+                                <td className="p-3 font-medium text-green-600">Rs.{record.cost}</td>
                                 <td className="p-3 text-sm text-gray-500">{record.notes}</td>
                             </tr>
                         ))}

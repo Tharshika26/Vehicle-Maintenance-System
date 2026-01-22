@@ -11,6 +11,7 @@ import Register from './pages/auth/Register';
 import AdminDashboard from './pages/admin/Dashboard';
 import ServiceRecords from './pages/admin/ServiceRecords';
 import AdminReports from './pages/admin/Reports';
+import Services from './pages/admin/Services';
 
 // Owner Pages
 import OwnerDashboard from './pages/owner/Dashboard';
@@ -43,6 +44,11 @@ function App() {
                     <Route path="/admin/reports" element={
                         <ProtectedRoute allowedRoles={['admin']}>
                             <AdminReports />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/admin/services" element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <Services />
                         </ProtectedRoute>
                     } />
 

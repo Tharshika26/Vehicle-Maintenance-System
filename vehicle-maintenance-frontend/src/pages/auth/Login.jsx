@@ -1,21 +1,58 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import heroCar from '../../assets/hero-car.jpeg';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Mock login logic
-        if ((email === 'admin@example.com' || email === 'admin@gmail.com') && password === 'admin') {
-            localStorage.setItem('userRole', 'admin');
-            navigate('/admin/dashboard');
-        } else {
-            localStorage.setItem('userRole', 'owner'); // Default to owner
-            navigate('/owner/dashboard');
+        setError('');
+        setIsLoading(true);
+
+        try {
+            const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
+                email: email.trim(),
+                password: password.trim()
+            }, {
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const { access, refresh, user } = response.data;
+            const userRole = user.role;
+
+            // Store auth data
+            localStorage.setItem('accessToken', access);
+            localStorage.setItem('refreshToken', refresh);
+            localStorage.setItem('userRole', userRole);
+            localStorage.setItem('user', JSON.stringify(user));
+
+            // Redirect based on role
+            if (userRole === 'admin') {
+                navigate('/admin/dashboard');
+            } else if (userRole === 'owner') {
+                navigate('/owner/dashboard');
+            } else {
+                // Default fallback
+                navigate('/');
+            }
+
+        } catch (err) {
+            console.error('Login error:', err);
+            if (err.response && err.response.data) {
+                // Try to get a specific error message from the backend
+                const backendError = err.response.data.detail || err.response.data.non_field_errors?.[0] || 'Login failed. Please check your credentials.';
+                setError(backendError);
+            } else {
+                setError('Network error. Is the backend server running?');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -39,6 +76,13 @@ const Login = () => {
                     <p className="text-gray-500 mb-8 leading-relaxed">
                         Sign in to access your vehicle service history and maintenance tracking.
                     </p>
+
+                    {error && (
+                        <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+                            <p className="font-bold">Error</p>
+                            <p>{error}</p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
@@ -89,9 +133,10 @@ const Login = () => {
 
                         <button
                             type="submit"
-                            className="w-full bg-[#00C27B] text-white font-bold py-3.5 rounded-xl hover:bg-[#00a669] transition shadow-lg shadow-green-500/30"
+                            disabled={isLoading}
+                            className={`w-full bg-[#00C27B] text-white font-bold py-3.5 rounded-xl hover:bg-[#00a669] transition shadow-lg shadow-green-500/30 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            Sign In
+                            {isLoading ? 'Signing In...' : 'Sign In'}
                         </button>
                     </form>
 

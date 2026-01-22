@@ -1,1 +1,70 @@
+# --- General ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# --- Python / Django ---
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesize
+
+# Django specific
+*.pot
+*.py[cod]
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static_root/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
+# --- Node / React ---
+node_modules/
+dist/
+dist-ssr/
+coverage/
+build/
+.npm
+.yarn
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Local temp files ---
+check_db_config.py
+debug_auth.py
+reset_pass.py
+test_api.py
+temp/
+tmp/
 vehicle-maintenance-backend/.env
