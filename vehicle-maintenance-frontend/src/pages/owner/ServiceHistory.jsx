@@ -2,11 +2,8 @@ import React from 'react';
 
 const ServiceHistory = () => {
     // Mock Data
-    const history = [
-        { id: 1, date: '2023-10-01', vehicle: 'ABC-1234', type: 'Oil Change', km: 15000, cost: 50, notes: 'Synthetic Oil' },
-        { id: 2, date: '2023-08-15', vehicle: 'ABC-1234', type: 'General Service', km: 10000, cost: 120, notes: 'Filter replacement' },
-        { id: 3, date: '2023-09-10', vehicle: 'XYZ-5678', type: 'Tire Replacement', km: 25000, cost: 400, notes: '4 New Tires' },
-    ];
+    // Mock Data
+    const history = [];
 
     const totalCost = history.reduce((acc, curr) => acc + curr.cost, 0);
 

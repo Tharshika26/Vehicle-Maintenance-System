@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api/axios';
 
 const AddVehicle = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        number: '', brand: '', model: '', year: '', fuel: ''
+        number: '', brand: '', model: '', vehicle_type: 'Car', fuel: ''
     });
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Adding Vehicle:', formData);
-        // Mock API call simulation
-        navigate('/owner/vehicles');
+        try {
+            const payload = {
+                license_plate: formData.number,
+                brand: formData.brand,
+                model: formData.model,
+                vehicle_type: formData.vehicle_type
+            };
+
+            await api.post('vehicles/', payload);
+
+            navigate('/owner/vehicles');
+        } catch (error) {
+            console.error('Error adding vehicle:', error);
+            alert('Failed to add vehicle. Please try again.');
+        }
     };
 
     return (
@@ -37,8 +50,13 @@ const AddVehicle = () => {
                             <input name="model" className="w-full border p-2 rounded" onChange={handleChange} required />
                         </div>
                         <div>
-                            <label className="block text-gray-700 mb-1">Year</label>
-                            <input name="year" type="number" className="w-full border p-2 rounded" onChange={handleChange} required />
+                            <label className="block text-gray-700 mb-1">Vehicle Type</label>
+                            <select name="vehicle_type" className="w-full border p-2 rounded" onChange={handleChange} required>
+                                <option value="">Select Vehicle Type</option>
+                                <option value="Car">Car</option>
+                                <option value="Bike">Bike</option>
+                                <option value="Van">Van</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-gray-700 mb-1">Fuel Type</label>

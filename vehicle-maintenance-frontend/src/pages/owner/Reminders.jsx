@@ -1,10 +1,7 @@
 import React from 'react';
 
 const Reminders = () => {
-    const reminders = [
-        { id: 1, vehicle: 'Toyota Camry (ABC-1234)', type: 'Oil Change', dueDate: '2023-12-01', status: 'Upcoming' },
-        { id: 2, vehicle: 'Honda Civic (XYZ-5678)', type: 'Insurance Renewal', dueDate: '2023-11-20', status: 'Urgent' },
-    ];
+    const reminders = [];
 
     return (
         <div className="p-6">

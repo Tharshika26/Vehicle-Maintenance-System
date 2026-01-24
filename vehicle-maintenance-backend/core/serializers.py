@@ -7,10 +7,15 @@ from .models import User, Vehicle, Service, ServiceRecord
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model - used for response data"""
     
+    vehicles = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'name', 'phone', 'city', 'role', 'date_joined']
+        fields = ['id', 'email', 'name', 'phone', 'city', 'role', 'date_joined', 'vehicles']
         read_only_fields = ['id', 'date_joined']
+
+    def get_vehicles(self, obj):
+        return [{'license_plate': v.license_plate, 'vehicle_type': v.vehicle_type} for v in obj.vehicles.all()]
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -102,7 +107,7 @@ class VehicleSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Vehicle
-        fields = ['id', 'license_plate', 'brand', 'model', 'year', 'owner', 'owner_name', 'created_at']
+        fields = ['id', 'license_plate', 'brand', 'model', 'vehicle_type', 'owner', 'owner_name', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 

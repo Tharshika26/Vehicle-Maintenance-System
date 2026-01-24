@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 
 const Services = () => {
     const [services, setServices] = useState([]);
@@ -8,14 +8,11 @@ const Services = () => {
     const [currentService, setCurrentService] = useState({ name: '', description: '', base_cost: '' });
     const [error, setError] = useState('');
 
-    const API_URL = 'http://127.0.0.1:8000/api/services/';
-    const token = localStorage.getItem('accessToken');
+    const API_URL = 'services/';
 
     const fetchServices = async () => {
         try {
-            const response = await axios.get(API_URL, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(API_URL);
             setServices(response.data);
             setError('');
         } catch (err) {
@@ -39,13 +36,9 @@ const Services = () => {
         setError('');
         try {
             if (isEditing) {
-                await axios.put(`${API_URL}${currentService.id}/`, currentService, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.put(`${API_URL}${currentService.id}/`, currentService);
             } else {
-                await axios.post(API_URL, currentService, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.post(API_URL, currentService);
             }
             fetchServices();
             resetForm();
@@ -64,9 +57,7 @@ const Services = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this service type?')) {
             try {
-                await axios.delete(`${API_URL}${id}/`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.delete(`${API_URL}${id}/`);
                 fetchServices();
             } catch (err) {
                 console.error('Delete error:', err);

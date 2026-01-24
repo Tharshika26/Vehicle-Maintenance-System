@@ -3,13 +3,14 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     RegisterView, LoginView, UserDetailView,
-    VehicleViewSet, ServiceViewSet, ServiceRecordViewSet
+    VehicleViewSet, ServiceViewSet, ServiceRecordViewSet, UserViewSet
 )
 
 router = DefaultRouter()
 router.register(r'vehicles', VehicleViewSet)
 router.register(r'services', ServiceViewSet)
 router.register(r'service-records', ServiceRecordViewSet)
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

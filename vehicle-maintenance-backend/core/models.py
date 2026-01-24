@@ -78,7 +78,12 @@ class Vehicle(models.Model):
     license_plate = models.CharField(max_length=20, unique=True)
     brand = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
-    year = models.IntegerField()
+    VEHICLE_TYPES = (
+        ('Car', 'Car'),
+        ('Bike', 'Bike'),
+        ('Van', 'Van'),
+    )
+    vehicle_type = models.CharField(max_length=10, choices=VEHICLE_TYPES, default='Car')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vehicles')
     created_at = models.DateTimeField(auto_now_add=True)
 
