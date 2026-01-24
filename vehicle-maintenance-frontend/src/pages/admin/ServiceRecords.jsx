@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 
 const ServiceRecords = () => {
     const [records, setRecords] = useState([]);
@@ -18,16 +18,15 @@ const ServiceRecords = () => {
         notes: ''
     });
 
-    const API_BASE = 'http://127.0.0.1:8000/api/';
-    const token = localStorage.getItem('accessToken');
+    const API_BASE = ''; // Base is already handled in axios instance
 
     const fetchData = async () => {
         setIsLoading(true);
         try {
             const [recordsRes, vehiclesRes, servicesRes] = await Promise.all([
-                axios.get(`${API_BASE}service-records/`, { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`${API_BASE}vehicles/`, { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get(`${API_BASE}services/`, { headers: { Authorization: `Bearer ${token}` } })
+                api.get('service-records/'),
+                api.get('vehicles/'),
+                api.get('services/')
             ]);
             setRecords(recordsRes.data);
             setVehicles(vehiclesRes.data);
@@ -65,13 +64,9 @@ const ServiceRecords = () => {
         setError('');
         try {
             if (isEditing) {
-                await axios.put(`${API_BASE}service-records/${newRecord.id}/`, newRecord, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.put(`service-records/${newRecord.id}/`, newRecord);
             } else {
-                await axios.post(`${API_BASE}service-records/`, newRecord, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.post('service-records/', newRecord);
             }
             fetchData();
             handleReset();
@@ -98,9 +93,7 @@ const ServiceRecords = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this record?')) {
             try {
-                await axios.delete(`${API_BASE}service-records/${id}/`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.delete(`service-records/${id}/`);
                 fetchData();
             } catch (err) {
                 console.error('Delete error:', err);
@@ -179,6 +172,7 @@ const ServiceRecords = () => {
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00C27B] focus:bg-white transition text-sm font-medium"
                                     onChange={handleChange}
                                     value={newRecord.date}
+                                    min={new Date().toISOString().split('T')[0]}
                                     required
                                 />
                             </div>
@@ -271,7 +265,7 @@ const ServiceRecords = () => {
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium text-[#00C27B] font-bold">Rs.{r.cost}</span>
+                                                        <span className="text-[#00C27B] font-bold">Rs.{r.cost}</span>
                                                         <span className="text-xs text-gray-500">{r.service_name}</span>
                                                     </div>
                                                 </td>

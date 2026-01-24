@@ -151,3 +151,12 @@ class ServiceRecordViewSet(viewsets.ModelViewSet):
         if user.role == 'admin':
             return ServiceRecord.objects.all()
         return ServiceRecord.objects.filter(vehicle__owner=user)
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for viewing users.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]

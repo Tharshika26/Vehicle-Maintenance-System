@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const Vehicles = () => {
-    // Mock Data
-    const [vehicles, setVehicles] = useState([
-        { id: 1, number: 'ABC-1234', brand: 'Toyota', model: 'Camry', year: 2020, fuel: 'Petrol' },
-        { id: 2, number: 'XYZ-5678', brand: 'Honda', model: 'Civic', year: 2018, fuel: 'Hybrid' },
-    ]);
+import api from '../../api/axios';
 
-    const handleDelete = (id) => {
-        setVehicles(vehicles.filter(v => v.id !== id));
+const Vehicles = () => {
+    const [vehicles, setVehicles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchData = async () => {
+        try {
+            const response = await api.get('vehicles/');
+            // Map backend fields to frontend expected fields if necessary, or update frontend usage
+            setVehicles(response.data);
+        } catch (error) {
+            console.error('Error fetching vehicles:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this vehicle?')) return;
+        try {
+            await api.delete(`vehicles/${id}/`);
+            fetchData();
+        } catch (error) {
+            console.error('Error deleting vehicle:', error);
+        }
     };
 
     return (
@@ -29,11 +50,12 @@ const Vehicles = () => {
                             <button onClick={() => handleDelete(vehicle.id)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
                         </div>
                         <h3 className="text-xl font-bold text-gray-800">{vehicle.brand} {vehicle.model}</h3>
-                        <p className="text-gray-500 text-sm mb-4">{vehicle.number}</p>
+                        <p className="text-gray-500 text-sm mb-4">{vehicle.license_plate}</p>
 
                         <div className="text-sm text-gray-600 space-y-1">
-                            <p><span className="font-semibold">Year:</span> {vehicle.year}</p>
-                            <p><span className="font-semibold">Fuel:</span> {vehicle.fuel}</p>
+                            <p><span className="font-semibold">Type:</span> {vehicle.vehicle_type}</p>
+                            {/* Fuel not in backend yet */}
+                            {/* <p><span className="font-semibold">Fuel:</span> {vehicle.fuel}</p> */}
                         </div>
 
                         <div className="mt-4 pt-4 border-t">

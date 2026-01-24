@@ -18,10 +18,9 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Total Vehicles</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">1,245</h3>
-                        <span className="text-green-500 text-sm font-bold flex items-center mt-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12 7a1 1 0 110-2 1 1 0 010 2 5 5 0 01-5 5 1 1 0 01-1-1 7 7 0 1012 0 1 1 0 01-1 1zm-1 2a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" /><path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" /></svg>
-                            +12% this month
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
+                        <span className="text-gray-400 text-sm flex items-center mt-2">
+                            -- this month
                         </span>
                     </div>
                 </div>
@@ -33,9 +32,9 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Services (Mo)</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">85</h3>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
                         <span className="text-gray-400 text-sm mt-2 block">
-                            Target: <span className="font-bold text-gray-600">100</span>
+                            Target: <span className="font-bold text-gray-600">--</span>
                         </span>
                     </div>
                 </div>
@@ -47,7 +46,7 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Pending</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">12</h3>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
                         <span className="text-purple-500 font-bold text-sm mt-2 block">Requires Attention</span>
                     </div>
                 </div>
@@ -68,25 +67,8 @@ const AdminDashboard = () => {
                             </tr>
                         </thead>
                         <tbody className="text-gray-700 text-sm">
-                            <tr className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                <td className="py-4 px-6 font-medium">2023-10-25</td>
-                                <td className="py-4 px-6">
-                                    <div className="flex flex-col">
-                                        <span className="font-bold text-[#0B1221]">Toyota Camry</span>
-                                        <span className="text-xs text-gray-400">ABC-1234</span>
-                                    </div>
-                                </td>
-                                <td className="py-4 px-6">Oil Change</td>
-                            </tr>
-                            <tr className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                <td className="py-4 px-6 font-medium">2023-10-26</td>
-                                <td className="py-4 px-6">
-                                    <div className="flex flex-col">
-                                        <span className="font-bold text-[#0B1221]">Honda Civic</span>
-                                        <span className="text-xs text-gray-400">XYZ-5678</span>
-                                    </div>
-                                </td>
-                                <td className="py-4 px-6">Brake Inspection</td>
+                            <tr>
+                                <td colSpan="3" className="py-8 text-center text-gray-500">No recent activity</td>
                             </tr>
                         </tbody>
                     </table>

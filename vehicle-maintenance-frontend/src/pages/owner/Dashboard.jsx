@@ -2,11 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const OwnerDashboard = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const ownerName = user.name || 'Owner';
+
     return (
         <div>
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-[#0B1221]">My Overview</h1>
-                <p className="text-gray-500 mt-1">Welcome back, here's what's happening with your vehicles.</p>
+                <h1 className="text-3xl font-bold text-[#0B1221]">Welcome Back, {ownerName}</h1>
+                <p className="text-gray-500 mt-1">Here's what's happening with your vehicles.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -17,7 +20,7 @@ const OwnerDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">My Vehicles</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">2</h3>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
                     </div>
                     <div className="mt-6 flex items-center">
                         <Link to="/owner/vehicles" className="text-[#0B1221] font-bold text-sm flex items-center hover:underline">
@@ -34,12 +37,12 @@ const OwnerDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Next Service Due</p>
-                        <h3 className="text-2xl font-bold text-[#0B1221]">15 Oct 2023</h3>
-                        <p className="text-sm text-gray-500 mt-1">Toyota Camry</p>
+                        <h3 className="text-2xl font-bold text-[#0B1221]">--</h3>
+                        <p className="text-sm text-gray-500 mt-1">No upcoming services</p>
                     </div>
                     <div className="mt-6 flex items-center">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            Due in 5 days
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Up to date
                         </span>
                     </div>
                 </div>
@@ -51,11 +54,11 @@ const OwnerDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Total Spent (YTD)</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">$450</h3>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">$0</h3>
                     </div>
                     <div className="mt-6 flex items-center">
                         <span className="text-gray-400 text-sm">
-                            Last expense: <span className="text-[#0B1221] font-medium">$120</span> (Oil Change)
+                            Last expense: <span className="text-[#0B1221] font-medium">--</span>
                         </span>
                     </div>
                 </div>
