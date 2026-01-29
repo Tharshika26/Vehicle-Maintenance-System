@@ -16,18 +16,69 @@ const Register = () => {
     });
 
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        // Clear field error when user starts typing
+        if (fieldErrors[e.target.name]) {
+            setFieldErrors({ ...fieldErrors, [e.target.name]: '' });
+        }
+    };
+
+    const validateForm = () => {
+        const errors = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^[0-9\s\-\(\)]{10,15}$/;
+        const nameRegex = /^[a-zA-Z\s]+$/;
+
+        if (!formData.name.trim()) {
+            errors.name = 'Full name is required';
+        } else if (formData.name.trim().length < 2) {
+            errors.name = 'Name must be at least 2 characters';
+        } else if (!nameRegex.test(formData.name.trim())) {
+            errors.name = 'Name should not contain numbers or special characters';
+        }
+
+        if (!formData.email.trim()) {
+            errors.email = 'Email address is required';
+        } else if (!emailRegex.test(formData.email)) {
+            errors.email = 'Please enter a valid email address';
+        }
+
+        if (!formData.phone.trim()) {
+            errors.phone = 'Phone number is required';
+        } else if (!phoneRegex.test(formData.phone)) {
+            errors.phone = 'Please enter a valid phone number (10-15 digits)';
+        }
+
+        if (!formData.city.trim()) {
+            errors.city = 'City is required';
+        }
+
+        if (!formData.password) {
+            errors.password = 'Password is required';
+        } else if (formData.password.length < 8) {
+            errors.password = 'Password must be at least 8 characters';
+        }
+
+        if (!formData.confirmPassword) {
+            errors.confirmPassword = 'Confirm password is required';
+        } else if (formData.password !== formData.confirmPassword) {
+            errors.confirmPassword = 'Passwords do not match';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
+        setFieldErrors({});
 
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match");
+        if (!validateForm()) {
             return;
         }
 
@@ -45,7 +96,6 @@ const Register = () => {
                 headers: { "Content-Type": "application/json" }
             });
 
-            // Assuming backend returns same structure as login: access, refresh, user
             const { access, refresh, user } = response.data;
 
             localStorage.setItem('accessToken', access);
@@ -58,13 +108,14 @@ const Register = () => {
         } catch (err) {
             console.error('Registration error:', err);
             if (err.response && err.response.data) {
-                // Handle different error objects
                 if (err.response.data.detail) {
                     setError(err.response.data.detail);
+                } else if (typeof err.response.data === 'object') {
+                    // Mapping backend field errors to frontend field errors
+                    setFieldErrors(err.response.data);
+                    setError('Please correct the highlighted fields.');
                 } else {
-                    // Start extracting field errors
-                    const messages = Object.values(err.response.data).flat();
-                    setError(messages[0] || 'Registration failed.');
+                    setError('Registration failed. Please try again.');
                 }
             } else {
                 setError('Network error. Is the backend server running?');
@@ -114,12 +165,14 @@ const Register = () => {
                                 <input
                                     type="text"
                                     name="name"
-                                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm"
+                                    className={`w-full pl-9 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm ${fieldErrors.name ? 'border-red-500' : 'border-gray-200'}`}
                                     value={formData.name}
                                     onChange={handleChange}
                                     placeholder="John Doe"
-                                    required
                                 />
+                                {fieldErrors.name && (
+                                    <p className="text-red-500 text-[10px] mt-0.5">{Array.isArray(fieldErrors.name) ? fieldErrors.name[0] : fieldErrors.name}</p>
+                                )}
                             </div>
                         </div>
 
@@ -134,12 +187,14 @@ const Register = () => {
                                 <input
                                     type="email"
                                     name="email"
-                                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm"
+                                    className={`w-full pl-9 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm ${fieldErrors.email ? 'border-red-500' : 'border-gray-200'}`}
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder="name@example.com"
-                                    required
                                 />
+                                {fieldErrors.email && (
+                                    <p className="text-red-500 text-[10px] mt-0.5">{Array.isArray(fieldErrors.email) ? fieldErrors.email[0] : fieldErrors.email}</p>
+                                )}
                             </div>
                         </div>
 
@@ -155,11 +210,14 @@ const Register = () => {
                                     <input
                                         type="text"
                                         name="phone"
-                                        className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm"
+                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm ${fieldErrors.phone ? 'border-red-500' : 'border-gray-200'}`}
                                         value={formData.phone}
                                         onChange={handleChange}
                                         placeholder="(555) 000-0000"
                                     />
+                                    {fieldErrors.phone && (
+                                        <p className="text-red-500 text-[10px] mt-0.5">{Array.isArray(fieldErrors.phone) ? fieldErrors.phone[0] : fieldErrors.phone}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -174,11 +232,14 @@ const Register = () => {
                                     <input
                                         type="text"
                                         name="city"
-                                        className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm"
+                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm ${fieldErrors.city ? 'border-red-500' : 'border-gray-200'}`}
                                         value={formData.city}
                                         onChange={handleChange}
                                         placeholder="New York"
                                     />
+                                    {fieldErrors.city && (
+                                        <p className="text-red-500 text-[10px] mt-0.5">{Array.isArray(fieldErrors.city) ? fieldErrors.city[0] : fieldErrors.city}</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -195,12 +256,14 @@ const Register = () => {
                                     <input
                                         type="password"
                                         name="password"
-                                        className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm"
+                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm ${fieldErrors.password ? 'border-red-500' : 'border-gray-200'}`}
                                         value={formData.password}
                                         onChange={handleChange}
                                         placeholder="........"
-                                        required
                                     />
+                                    {fieldErrors.password && (
+                                        <p className="text-red-500 text-[10px] mt-0.5">{Array.isArray(fieldErrors.password) ? fieldErrors.password[0] : fieldErrors.password}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -215,12 +278,14 @@ const Register = () => {
                                     <input
                                         type="password"
                                         name="confirmPassword"
-                                        className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm"
+                                        className={`w-full pl-9 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00C27B] focus:border-transparent transition text-gray-700 bg-white text-sm ${fieldErrors.confirmPassword ? 'border-red-500' : 'border-gray-200'}`}
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
                                         placeholder="........"
-                                        required
                                     />
+                                    {fieldErrors.confirmPassword && (
+                                        <p className="text-red-500 text-[10px] mt-0.5">{Array.isArray(fieldErrors.confirmPassword) ? fieldErrors.confirmPassword[0] : fieldErrors.confirmPassword}</p>
+                                    )}
                                 </div>
                             </div>
                         </div>

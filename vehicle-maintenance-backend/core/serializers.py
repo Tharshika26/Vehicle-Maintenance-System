@@ -17,6 +17,27 @@ class UserSerializer(serializers.ModelSerializer):
     def get_vehicles(self, obj):
         return [{'license_plate': v.license_plate, 'vehicle_type': v.vehicle_type} for v in obj.vehicles.all()]
 
+    def validate_name(self, value):
+        """Check that the name is at least 2 characters long and contains only letters and spaces."""
+        import re
+        stripped_name = value.strip()
+        if len(stripped_name) < 2:
+            raise serializers.ValidationError("Name must be at least 2 characters long.")
+        if not re.match(r'^[a-zA-Z\s]+$', stripped_name):
+            raise serializers.ValidationError("Name should not contain numbers or special characters.")
+        return stripped_name
+
+    def validate_phone(self, value):
+        """Basic phone number validation (digits and some separators)."""
+        if value:
+            import re
+            clean_phone = re.sub(r'[\s\-\(\)]', '', value)
+            if not clean_phone.isdigit():
+                raise serializers.ValidationError("Phone number must contain only digits.")
+            if len(clean_phone) < 10 or len(clean_phone) > 15:
+                raise serializers.ValidationError("Phone number must be between 10 and 15 digits.")
+        return value
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration"""
@@ -33,15 +54,37 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'name', 'phone', 'city', 'password', 'role']
         extra_kwargs = {
             'role': {'default': 'owner'},
-            'phone': {'required': False},
-            'city': {'required': False}
+            'phone': {'required': True, 'allow_blank': False},
+            'city': {'required': True, 'allow_blank': False}
         }
     
+    def validate_name(self, value):
+        """Check that the name is at least 2 characters long and contains only letters and spaces."""
+        import re
+        stripped_name = value.strip()
+        if len(stripped_name) < 2:
+            raise serializers.ValidationError("Name must be at least 2 characters long.")
+        if not re.match(r'^[a-zA-Z\s]+$', stripped_name):
+            raise serializers.ValidationError("Name should not contain numbers or special characters.")
+        return stripped_name
+
+    def validate_phone(self, value):
+        """Basic phone number validation (digits and some separators)."""
+        if value:
+            # Remove common separators
+            import re
+            clean_phone = re.sub(r'[\s\-\(\)]', '', value)
+            if not clean_phone.isdigit():
+                raise serializers.ValidationError("Phone number must contain only digits.")
+            if len(clean_phone) < 10 or len(clean_phone) > 15:
+                raise serializers.ValidationError("Phone number must be between 10 and 15 digits.")
+        return value
+
     def validate_email(self, value):
-        """Ensure email is unique"""
+        """Ensure email is unique and valid."""
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("User with this email already exists.")
-        return value
+        return value.lower()
     
     def create(self, validated_data):
         """Create user with hashed password"""
@@ -108,7 +151,7 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = ['id', 'license_plate', 'brand', 'model', 'vehicle_type', 'owner', 'owner_name', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'created_at', 'owner']
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -123,12 +166,13 @@ class ServiceSerializer(serializers.ModelSerializer):
 class ServiceRecordSerializer(serializers.ModelSerializer):
     """Serializer for ServiceRecord model"""
     vehicle_plate = serializers.ReadOnlyField(source='vehicle.license_plate')
+    vehicle_type = serializers.ReadOnlyField(source='vehicle.vehicle_type')
     service_name = serializers.ReadOnlyField(source='service.name')
     
     class Meta:
         model = ServiceRecord
         fields = [
-            'id', 'vehicle', 'vehicle_plate', 'service', 'service_name', 
+            'id', 'vehicle', 'vehicle_plate', 'vehicle_type', 'service', 'service_name', 
             'date', 'kilometers', 'cost', 'notes', 'created_at'
         ]
         read_only_fields = ['id', 'created_at']

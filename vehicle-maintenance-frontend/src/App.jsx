@@ -20,6 +20,7 @@ import Vehicles from './pages/owner/Vehicles';
 import AddVehicle from './pages/owner/AddVehicle';
 import ServiceHistory from './pages/owner/ServiceHistory';
 import Reminders from './pages/owner/Reminders';
+import Profile from './pages/owner/Profile';
 
 function App() {
     return (
@@ -82,6 +83,11 @@ function App() {
                     <Route path="/owner/reminders" element={
                         <ProtectedRoute allowedRoles={['owner']}>
                             <Reminders />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/owner/profile" element={
+                        <ProtectedRoute allowedRoles={['owner']}>
+                            <Profile />
                         </ProtectedRoute>
                     } />
                 </Route>

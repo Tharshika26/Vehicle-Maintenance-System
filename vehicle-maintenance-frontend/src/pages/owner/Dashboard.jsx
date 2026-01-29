@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../api/axios';
 
 const OwnerDashboard = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const ownerName = user.name || 'Owner';
+    const [stats, setStats] = useState({
+        total_vehicles: 0,
+        next_service_date: null,
+        total_spent: 0,
+        last_expense: 0
+    });
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const response = await api.get('owner/dashboard/stats/');
+                setStats(response.data);
+            } catch (error) {
+                console.error('Error fetching owner dashboard stats:', error);
+            }
+        };
+        fetchDashboardData();
+    }, []);
 
     return (
         <div>
@@ -20,7 +39,7 @@ const OwnerDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">My Vehicles</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">{stats.total_vehicles}</h3>
                     </div>
                     <div className="mt-6 flex items-center">
                         <Link to="/owner/vehicles" className="text-[#0B1221] font-bold text-sm flex items-center hover:underline">
@@ -37,12 +56,12 @@ const OwnerDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Next Service Due</p>
-                        <h3 className="text-2xl font-bold text-[#0B1221]">--</h3>
-                        <p className="text-sm text-gray-500 mt-1">No upcoming services</p>
+                        <h3 className="text-2xl font-bold text-[#0B1221]">{stats.next_service_date || '--'}</h3>
+                        <p className="text-sm text-gray-500 mt-1">{stats.next_service_date ? 'Maintenance reminder calculated' : 'No upcoming services'}</p>
                     </div>
                     <div className="mt-6 flex items-center">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            Up to date
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stats.next_service_date ? 'bg-[#00C27B]/10 text-[#00C27B]' : 'bg-gray-100 text-gray-800'}`}>
+                            {stats.next_service_date ? 'Scheduled' : 'Up to date'}
                         </span>
                     </div>
                 </div>
@@ -53,12 +72,12 @@ const OwnerDashboard = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-[#00C27B]" fill="currentColor" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" /></svg>
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Total Spent (YTD)</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">$0</h3>
+                        <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Total Spent</p>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">Rs.{stats.total_spent.toFixed(2)}</h3>
                     </div>
                     <div className="mt-6 flex items-center">
                         <span className="text-gray-400 text-sm">
-                            Last expense: <span className="text-[#0B1221] font-medium">--</span>
+                            Last expense: <span className="text-[#0B1221] font-medium">Rs.{stats.last_expense.toFixed(2)}</span>
                         </span>
                     </div>
                 </div>

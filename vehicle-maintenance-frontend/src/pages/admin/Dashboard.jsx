@@ -1,8 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
+import api from '../../api/axios';
 
 const AdminDashboard = () => {
+    const [stats, setStats] = useState({
+        total_vehicles: 0,
+        total_services: 0,
+        recent_activity: []
+    });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await api.get('dashboard/stats/');
+                setStats(response.data);
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
     return (
         <div>
             <div className="mb-8">
@@ -10,7 +29,7 @@ const AdminDashboard = () => {
                 <p className="text-gray-500 mt-1">Monitor performance and manage service requests.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Stats Card 1 */}
                 <div className="bg-white p-6 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-lg transition-shadow border border-gray-100 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -18,9 +37,9 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Total Vehicles</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">{stats.total_vehicles}</h3>
                         <span className="text-gray-400 text-sm flex items-center mt-2">
-                            -- this month
+                            Registered in system
                         </span>
                     </div>
                 </div>
@@ -31,23 +50,11 @@ const AdminDashboard = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-[#00C27B]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Services (Mo)</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
+                        <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Total Services</p>
+                        <h3 className="text-4xl font-extrabold text-[#0B1221]">{stats.total_services}</h3>
                         <span className="text-gray-400 text-sm mt-2 block">
-                            Target: <span className="font-bold text-gray-600">--</span>
+                            All time records
                         </span>
-                    </div>
-                </div>
-
-                {/* Stats Card 3 */}
-                <div className="bg-white p-6 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-lg transition-shadow border border-gray-100 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-purple-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Pending</p>
-                        <h3 className="text-4xl font-extrabold text-[#0B1221]">0</h3>
-                        <span className="text-purple-500 font-bold text-sm mt-2 block">Requires Attention</span>
                     </div>
                 </div>
             </div>
@@ -67,9 +74,19 @@ const AdminDashboard = () => {
                             </tr>
                         </thead>
                         <tbody className="text-gray-700 text-sm">
-                            <tr>
-                                <td colSpan="3" className="py-8 text-center text-gray-500">No recent activity</td>
-                            </tr>
+                            {stats.recent_activity.length > 0 ? (
+                                stats.recent_activity.map(record => (
+                                    <tr key={record.id} className="border-b border-gray-50 hover:bg-gray-50">
+                                        <td className="py-4 px-6">{record.date}</td>
+                                        <td className="py-4 px-6 font-medium">{record.vehicle_plate}</td>
+                                        <td className="py-4 px-6">{record.service_name || 'General Service'}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="3" className="py-8 text-center text-gray-500">No recent activity</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

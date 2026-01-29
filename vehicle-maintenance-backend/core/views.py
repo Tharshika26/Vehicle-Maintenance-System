@@ -86,11 +86,11 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailView(generics.RetrieveUpdateAPIView):
     """
-    GET /api/auth/user/
+    GET /api/auth/user/ - Retrieve profile
+    PATCH /api/auth/user/ - Update profile
     
-    Retrieve authenticated user's information.
     Requires: Authorization: Bearer <access_token>
     """
     serializer_class = UserSerializer
@@ -160,3 +160,165 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    
+
+class DashboardStatsView(APIView):
+    """
+    GET /api/dashboard/stats/
+    
+    Retrieve dashboard statistics for admin.
+    """
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+
+    def get(self, request):
+        total_vehicles = Vehicle.objects.count()
+        total_services = ServiceRecord.objects.count()
+        
+        # Get recent 5 service records
+        recent_records = ServiceRecord.objects.order_by('-date')[:5]
+        recent_data = ServiceRecordSerializer(recent_records, many=True).data
+        
+        return Response({
+            'total_vehicles': total_vehicles,
+            'total_services': total_services,
+            'recent_activity': recent_data
+        })
+
+
+class ReportsStatsView(APIView):
+    """
+    GET /api/reports/stats/
+    
+    Retrieve aggregated data for reports charts.
+    """
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+
+    def get(self, request):
+        from django.db.models import Sum, Count
+        from django.db.models.functions import TruncMonth
+        
+        # 1. Monthly Revenue (Last 12 months)
+        monthly_revenue = ServiceRecord.objects.annotate(
+            month=TruncMonth('date')
+        ).values('month').annotate(
+            revenue=Sum('cost')
+        ).order_by('month')
+        
+        # Format for frontend
+        revenue_data = [
+            {
+                'name': item['month'].strftime('%b'), # Jan, Feb, etc.
+                'revenue': item['revenue']
+            }
+            for item in monthly_revenue
+        ]
+
+        # 2. Service Type Distribution
+        # Group by service name. If service is null (deleted), label as 'Unknown'
+        service_distribution = ServiceRecord.objects.values(
+            'service__name'
+        ).annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        distribution_data = [
+            {
+                'name': item['service__name'] if item['service__name'] else 'Other',
+                'value': item['count']
+            }
+            for item in service_distribution
+        ]
+        
+        return Response({
+            'monthly_revenue': revenue_data,
+            'service_distribution': distribution_data
+        })
+
+
+class RemindersView(APIView):
+    """
+    GET /api/reminders/
+    
+    Calculate and return service reminders (6 months after service date).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from datetime import timedelta
+        user = request.user
+        
+        # Get service records for owner's vehicles
+        records = ServiceRecord.objects.filter(vehicle__owner=user).select_related('vehicle', 'service')
+        
+        reminders = []
+        for record in records:
+            # Calculate due date: 6 months (182 days) after service date
+            due_date = record.date + timedelta(days=182)
+            
+            # Formatting proximity/status
+            # Triggered one day before (we'll show it as "Urgent" if due tomorrow or earlier)
+            from django.utils import timezone
+            today = timezone.now().date()
+            days_remaining = (due_date - today).days
+            
+            status = "Upcoming"
+            if days_remaining <= 1:
+                status = "Urgent"
+            elif days_remaining <= 7:
+                status = "Pending"
+            
+            # The user wants to see it on the page. 
+            # We'll return it if it's upcoming or very recently past?
+            # For now, return all records that have a future due date.
+            if due_date >= today:
+                reminders.append({
+                    'id': record.id,
+                    'vehicle_number': record.vehicle.license_plate,
+                    'vehicle_type': record.vehicle.vehicle_type,
+                    'service_name': record.service.name if record.service else 'General Service',
+                    'due_date': due_date.strftime('%Y-%m-%d'),
+                    'status': status
+                })
+        
+        # Sort by due date
+        reminders.sort(key=lambda x: x['due_date'])
+        
+        return Response(reminders)
+
+
+class OwnerDashboardStatsView(APIView):
+    """
+    GET /api/owner/dashboard/stats/
+    
+    Retrieve dashboard statistics for vehicle owners.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from django.db.models import Sum
+        from datetime import timedelta
+        user = request.user
+        
+        # 1. Total Vehicles
+        total_vehicles = Vehicle.objects.filter(owner=user).count()
+        
+        # 2. Next Service Date
+        # Logic: latest service date + 6 months
+        latest_record = ServiceRecord.objects.filter(vehicle__owner=user).order_by('-date').first()
+        next_service_date = None
+        if latest_record:
+            next_service_date = latest_record.date + timedelta(days=182)
+        
+        # 3. Total Spent
+        total_spent = ServiceRecord.objects.filter(vehicle__owner=user).aggregate(total=Sum('cost'))['total'] or 0.00
+        
+        # 4. Last expense
+        last_expense = float(latest_record.cost) if latest_record else 0.00
+        
+        return Response({
+            'total_vehicles': total_vehicles,
+            'next_service_date': next_service_date.strftime('%Y-%m-%d') if next_service_date else None,
+            'total_spent': float(total_spent),
+            'last_expense': last_expense
+        })
+
