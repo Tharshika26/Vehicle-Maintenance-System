@@ -54,8 +54,7 @@ const Vehicles = () => {
 
                         <div className="text-sm text-gray-600 space-y-1">
                             <p><span className="font-semibold">Type:</span> {vehicle.vehicle_type}</p>
-                            {/* Fuel not in backend yet */}
-                            {/* <p><span className="font-semibold">Fuel:</span> {vehicle.fuel}</p> */}
+                            <p><span className="font-semibold">Fuel:</span> {vehicle.fuel_type}</p>
                         </div>
 
                         <div className="mt-4 pt-4 border-t">

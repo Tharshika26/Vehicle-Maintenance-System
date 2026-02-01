@@ -19,7 +19,8 @@ const AddVehicle = () => {
                 license_plate: formData.number,
                 brand: formData.brand,
                 model: formData.model,
-                vehicle_type: formData.vehicle_type
+                vehicle_type: formData.vehicle_type,
+                fuel_type: formData.fuel
             };
 
             await api.post('vehicles/', payload);

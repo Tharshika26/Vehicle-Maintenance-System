@@ -84,6 +84,13 @@ class Vehicle(models.Model):
         ('Van', 'Van'),
     )
     vehicle_type = models.CharField(max_length=10, choices=VEHICLE_TYPES, default='Car')
+    FUEL_TYPES = (
+        ('Petrol', 'Petrol'),
+        ('Diesel', 'Diesel'),
+        ('Electric', 'Electric'),
+        ('Hybrid', 'Hybrid'),
+    )
+    fuel_type = models.CharField(max_length=20, choices=FUEL_TYPES, default='Petrol')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vehicles')
     created_at = models.DateTimeField(auto_now_add=True)
 
